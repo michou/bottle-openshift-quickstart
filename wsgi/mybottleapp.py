@@ -1,16 +1,22 @@
-from bottle import route, default_app
+from bottle import TEMPLATE_PATH
+from bottle import Bottle
 
-@route('/name/<name>')
+from envutils import set_local_or_prod
+
+VIEWS_PATH = set_local_or_prod('OPENSHIFT_REPO_DIR', 'wsgi/views', 'views')
+STATIC_PATH = set_local_or_prod('OPENSHIFT_REPO_DIR', 'wsgi/static', 'static')
+CONTENT_PATH = set_local_or_prod('OPENSHIFT_DATA_DIR', '.', '../data')
+
+# This must be added in order to do correct path lookups for the views
+if VIEWS_PATH not in TEMPLATE_PATH:
+	TEMPLATE_PATH.append(VIEWS_PATH)
+
+app = Bottle()
+
+@app.route('/name/<name>')
 def nameindex(name='Stranger'):
     return '<strong>Hello, %s!</strong>' % name
  
-@route('/')
+@app.route('/')
 def index():
     return '<strong>Hello World!</strong>'
-
-# This must be added in order to do correct path lookups for the views
-import os
-from bottle import TEMPLATE_PATH
-TEMPLATE_PATH.append(os.path.join(os.environ['OPENSHIFT_REPO_DIR'], 'wsgi/views/')) 
-
-application=default_app()
